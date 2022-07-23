@@ -1,6 +1,18 @@
 pipeline {
     agent any
 
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
+
+        AWS_S3_BUCKET = "artifact-dotnet-dellfiles"
+        ARTEFACT_NAME = "pipeliens-dotnet-core.dll"
+
+        AWS_EB_APP_NAME = ".net-webapp"
+        AWS_EB_APP_VERSION = "${BUILD_ID}"
+        AWS_EB_ENVIRONMENT = "Netwebapp-env"
+
+    }
     stages {
         stage('Restore') {
             steps {
@@ -9,11 +21,12 @@ pipeline {
 
             }
         }
+    
   
-        stage('Build') {
+        stage('Bulid') {
             steps {
 
-                sh 'dotnet build'
+                sh "dotnet build"
             }
         }
     
@@ -21,20 +34,36 @@ pipeline {
         stage('Test') {
             steps {
 
-                sh 'dotnet test'
+                sh "dotnet test"
             }
         }
-    
-        stage('Publish') {
+        stage('Package') {
             steps {
 
-                sh 'dotnet publish'
+                sh "dotnet publish"
             }
 
             post {
                 success {
-                    archiveArtifacts artifacts: 'bin/Debug/net6.0/**.dll', followSymlinks: false
+                    archiveArtifacts artifacts: 'bin/Debug/net6.0/pipeliens-dotnet-core.dll', followSymlinks: false
                 }
+            }
+        }
+        stage('Publish artefacts to s3 bucket') {
+            steps {
+
+                sh "aws configure set region us-east-1"
+
+                sh "aws s3 cp ./bin/Debug/net6.0/pipeliens-dotnet-core.dll s3://$AWS_S3_BUCKET/$ARTEFACT_NAME"
+            }
+        }
+        stage('Deploy') {
+            steps {
+
+                sh "aws elasticbeanstalk create-application-version --application-name $AWS_EB_APP_NAME --version-label $AWS_EB_APP_VERSION --source-bundle S3Bucket=$AWS_S3_BUCKET,S3Key=$ARTEFACT_NAME"
+
+                sh "aws elasticbeanstalk update-environment --application-name $AWS_EB_APP_NAME --environment-name $AWS_EB_ENVIRONMENT --version-label $AWS_EB_APP_VERSION"
+
             }
         }
     
