@@ -25,7 +25,7 @@ pipeline {
             }
         }
     
-        stage('Package') {
+        stage('Publish') {
             steps {
 
                 sh 'dotnet publish'
