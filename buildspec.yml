@@ -23,7 +23,7 @@ phases:
     commands:
       - echo Build Start on 'date'
       - dotnet publish
-      - mv /bin/Debug/net6.0/pipelines-dotnet-core.dll ROOT.dll
+      - mv bin/Debug/net6.0/pipelines-dotnet-core.dll ROOT.dll
       - echo Build ends on 'date'
 
 artifacts:
