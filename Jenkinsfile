@@ -6,7 +6,7 @@ pipeline {
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
 
         AWS_S3_BUCKET = "artifact-dotnet-dellfiles"
-        ARTEFACT_NAME = "pipeliens-dotnet-core.dll"
+        ARTEFACT_NAME = "pipelines-dotnet-core.dll"
 
         AWS_EB_APP_NAME = ".net-webapp"
         AWS_EB_APP_VERSION = "${BUILD_ID}"
@@ -45,7 +45,7 @@ pipeline {
 
             post {
                 success {
-                    archiveArtifacts artifacts: 'bin/Debug/net6.0/pipeliens-dotnet-core.dll', followSymlinks: false
+                    archiveArtifacts artifacts: 'bin/Debug/net6.0/pipelines-dotnet-core.dll', followSymlinks: false
                 }
             }
         }
@@ -54,7 +54,7 @@ pipeline {
 
                 sh "aws configure set region us-east-1"
 
-                sh "aws s3 cp ./bin/Debug/net6.0/pipeliens-dotnet-core.dll s3://$AWS_S3_BUCKET/$ARTEFACT_NAME"
+                sh "aws s3 cp ./bin/Debug/net6.0/pipelines-dotnet-core.dll s3://$AWS_S3_BUCKET/$ARTEFACT_NAME"
             }
         }
         stage('Deploy') {
